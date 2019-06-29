@@ -1,0 +1,38 @@
+{
+  "Actions": [
+    {
+      "Icon": "Images/icon",
+      "Name": "Text File Updater",
+      "States": [
+        {
+          "Image": "Images/key",
+          "TitleAlignment": "middle",
+          "FontSize": "12"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Text file updater",
+      "UUID": "com.barraider.textfileupdater",
+      "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/TextFileUpdater.html"
+    }
+  ],
+  "Author": "BarRaider",
+  "Description": "Overwrites the contents of a text file with a predefined string. Use to change overlay text during Stream",
+  "Name": "Text File Updater",
+  "Icon": "Images/pluginIcon",
+  "URL": "https://barraider.github.io/",
+  "Version": "1.0",
+  "CodePath": "com.barraider.textfileupdater",
+  "Category": "BarRaider",
+  "CategoryIcon": "Images/categoryIcon",
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "4.3"
+  }
+}
