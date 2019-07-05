@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace BarRaider.TextFileUpdater
 {
-    [PluginActionId("com.barraider.textfileupdater")]
+    [PluginActionId("com.barraider.textfiletools.textfileupdater")]
     public class TextFileUpdaterAction : PluginBase
     {
         private class PluginSettings

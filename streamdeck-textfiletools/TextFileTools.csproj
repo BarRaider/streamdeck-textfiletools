@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E48E7B20-6E4D-4D16-B7CB-264D7A0257B0}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>BarRaider.TextFileUpdater</RootNamespace>
-    <AssemblyName>com.barraider.textfileupdater</AssemblyName>
+    <RootNamespace>BarRaider.TextFileTools</RootNamespace>
+    <AssemblyName>com.barraider.textfiletools</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\com.barraider.textfileupdater.sdPlugin\</OutputPath>
+    <OutputPath>bin\Debug\com.barraider.textfiletools.sdPlugin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -27,7 +27,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\com.barraider.textfileupdater.sdPlugin\</OutputPath>
+    <OutputPath>bin\Release\com.barraider.textfiletools.sdPlugin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

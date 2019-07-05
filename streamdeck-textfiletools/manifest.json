@@ -11,18 +11,18 @@
         }
       ],
       "SupportedInMultiActions": false,
-      "Tooltip": "Text file updater",
-      "UUID": "com.barraider.textfileupdater",
+      "Tooltip": "Overwrites the contents of a text file with a predefined string. Use to change overlay text during Stream",
+      "UUID": "com.barraider.textfiletools.textfileupdater",
       "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/TextFileUpdater.html"
     }
   ],
   "Author": "BarRaider",
-  "Description": "Overwrites the contents of a text file with a predefined string. Use to change overlay text during Stream",
-  "Name": "Text File Updater",
+  "Description": "A set of tools for manipulating text files through the Elgato Stream Deck. Useful for live stream updates",
+  "Name": "Text File Tools",
   "Icon": "Images/pluginIcon",
   "URL": "https://barraider.github.io/",
   "Version": "1.0",
-  "CodePath": "com.barraider.textfileupdater",
+  "CodePath": "com.barraider.textfiletools",
   "Category": "BarRaider",
   "CategoryIcon": "Images/categoryIcon",
   "OS": [
