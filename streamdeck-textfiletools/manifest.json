@@ -51,7 +51,7 @@
   "Name": "Text File Tools",
   "Icon": "Images/pluginIcon",
   "URL": "https://barraider.github.io/",
-  "Version": "1.1",
+  "Version": "1.1.1",
   "CodePath": "com.barraider.textfiletools",
   "Category": "Text File Tools [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
