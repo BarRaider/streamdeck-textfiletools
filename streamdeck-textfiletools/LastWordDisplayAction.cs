@@ -86,7 +86,7 @@ namespace BarRaider.TextFileUpdater
                 return "No File";
             }
 
-            string[] words = File.ReadAllText(settings.FileName).Trim().Split(' ');
+            string[] words = File.ReadAllText(settings.FileName).Replace("*","").Trim().Split(' ');
             return words.LastOrDefault();
         }
 
