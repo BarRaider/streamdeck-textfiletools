@@ -5,6 +5,12 @@ Overwrites the contents of a text file with a predefined string. Use to change o
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
+## Current Features
+* Text File Updater - Overwrites the contents of a text file with a predefined string. Use to change overlay text during Stream
+* Last Word Display - Shows the last word of a text file on your Stream Deck
+* Random Line Writer - Sends a random line from a text file to your keyboard, useful for giveaways or just sending a random 'hello' message in chat.
+
+
 ### Download
 
 * [Download plugin](https://github.com/BarRaider/streamdeck-textfiletools/releases/)
