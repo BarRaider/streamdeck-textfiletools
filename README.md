@@ -1,7 +1,6 @@
 # Text file Tools for the Elgato Stream Deck
 
 A set of tools for manipulating text files through the Elgato Stream Deck. Useful for live stream updates
-Overwrites the contents of a text file with a predefined string. Use to change overlay text during Stream
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
