@@ -18,21 +18,27 @@ namespace BarRaider.TextFileUpdater
         {
             public static PluginSettings CreateDefaultSettings()
             {
-                PluginSettings instance = new PluginSettings();
-                instance.FileName = String.Empty;
+                PluginSettings instance = new PluginSettings
+                {
+                    FileName = String.Empty,
+                    SendEnterAtEnd = false
+                };
                 return instance;
             }
 
             [FilenameProperty]
             [JsonProperty(PropertyName = "fileName")]
             public string FileName { get; set; }
+
+            [JsonProperty(PropertyName = "sendEnterAtEnd")]
+            public bool SendEnterAtEnd { get; set; }
         }
 
         #region Private Members
 
-        private PluginSettings settings;
-        private InputSimulator iis = new InputSimulator();
-        private Random rand = new Random();
+        private readonly PluginSettings settings;
+        private readonly InputSimulator iis = new InputSimulator();
+        private readonly Random rand = new Random();
 
         #endregion
         public RandomLineAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -55,7 +61,16 @@ namespace BarRaider.TextFileUpdater
         public override void KeyPressed(KeyPayload payload)
         {
             Logger.Instance.LogMessage(TracingLevel.INFO, "Key Pressed");
-            iis.Keyboard.TextEntry(ReadRandomLineFromFile());
+            string randomLine = ReadRandomLineFromFile();
+            if (!string.IsNullOrEmpty(randomLine))
+            {
+                iis.Keyboard.TextEntry(randomLine);
+            }
+
+            if (settings.SendEnterAtEnd)
+            {
+                iis.Keyboard.KeyDown(WindowsInput.Native.VirtualKeyCode.RETURN);
+            }
         }
 
         public override void KeyReleased(KeyPayload payload) { }
