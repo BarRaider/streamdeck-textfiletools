@@ -4,6 +4,9 @@ A set of tools for manipulating text files through the Elgato Stream Deck. Usefu
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
+## New in v1.5.1
+- Random Line action now supports `Sending Enter` key at the end of the line. Useful if using for things like Chat, and you want the random line to be sent automatically.
+
 ## Current Features
 * Text File Updater - Overwrites the contents of a text file with a predefined string. Use to change overlay text during Stream
 * Last Word Display - Shows the last word of a text file on your Stream Deck
