@@ -2,7 +2,7 @@
 
 A set of tools for manipulating text files through the Elgato Stream Deck. Useful for live stream updates
 
-**Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
+ **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
 ## New in v1.5.1
 - Random Line action now supports `Sending Enter` key at the end of the line. Useful if using for things like Chat, and you want the random line to be sent automatically.
@@ -18,10 +18,10 @@ A set of tools for manipulating text files through the Elgato Stream Deck. Usefu
 * [Download plugin](https://github.com/BarRaider/streamdeck-textfiletools/releases/)
 
 ## I found a bug, who do I contact?
-For support please contact the developer. Contact information is available at https://barraider.github.io
+For support please contact the developer. Contact information is available at https://barraider.com
 
 ## I have a feature request, who do I contact?
-Please contact the developer. Contact information is available at https://barraider.github.io
+Please contact the developer. Contact information is available at https://barraider.com
 
 ## Dependencies
 * Uses StreamDeck-Tools by BarRaider: [![NuGet](https://img.shields.io/nuget/v/streamdeck-tools.svg?style=flat)](https://www.nuget.org/packages/streamdeck-tools)

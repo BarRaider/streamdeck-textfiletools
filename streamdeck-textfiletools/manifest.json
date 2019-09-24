@@ -50,7 +50,7 @@
   "Description": "A set of tools for manipulating text files through the Elgato Stream Deck. Useful for live stream updates",
   "Name": "Text File Tools",
   "Icon": "Images/pluginIcon",
-  "URL": "https://barraider.github.io/",
+  "URL": "https://BarRaider.com/",
   "Version": "1.1.5",
   "CodePath": "com.barraider.textfiletools",
   "Category": "Text File Tools [BarRaider]",
