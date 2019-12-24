@@ -3,6 +3,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,20 +20,44 @@ namespace BarRaider.TextFileUpdater
         {
             public static PluginSettings CreateDefaultSettings()
             {
-                PluginSettings instance = new PluginSettings();
-                instance.FileName = String.Empty;
+                PluginSettings instance = new PluginSettings
+                {
+                    FileName = String.Empty,
+                    AlertText = String.Empty,
+                    AlertColor = DEFAULT_ALERT_COLOR,
+                    BackgroundFile = String.Empty
+                };
                 return instance;
             }
 
             [FilenameProperty]
             [JsonProperty(PropertyName = "fileName")]
             public string FileName { get; set; }
+
+            [FilenameProperty]
+            [JsonProperty(PropertyName = "backgroundFile")]
+            public string BackgroundFile { get; set; }
+
+            [JsonProperty(PropertyName = "alertText")]
+            public string AlertText { get; set; }
+
+            [JsonProperty(PropertyName = "alertColor")]
+            public string AlertColor { get; set; }
         }
 
         #region Private Members
+        private const string DEFAULT_ALERT_COLOR = "#FF0000";
+        private const int TOTAL_ALERT_STAGES = 4;
+        private const double POINTS_TO_PIXEL_CONVERT = 1.3;
 
-        private PluginSettings settings;
-        private InputSimulator iis = new InputSimulator();
+
+        private readonly PluginSettings settings;
+        private readonly InputSimulator iis = new InputSimulator();
+        private readonly System.Timers.Timer tmrAlert = new System.Timers.Timer();
+        private TitleParser titleParser = new TitleParser(null);
+        private Color titleColor = Color.White;
+        private bool isAlerting = false;
+        private int alertStage = 0;
 
         #endregion
         public LastWordDisplayAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -44,16 +70,39 @@ namespace BarRaider.TextFileUpdater
             {
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
+            Connection.StreamDeckConnection.OnTitleParametersDidChange += StreamDeckConnection_OnTitleParametersDidChange;
+            tmrAlert.Interval = 200;
+            tmrAlert.Elapsed += TmrAlert_Elapsed;
+        }
+
+        private void StreamDeckConnection_OnTitleParametersDidChange(object sender, streamdeck_client_csharp.StreamDeckEventReceivedEventArgs<streamdeck_client_csharp.Events.TitleParametersDidChangeEvent> e)
+        {
+            if (Connection.ContextId != e.Event.Context)
+            {
+                return;
+            }
+
+            titleParser = new TitleParser(e.Event?.Payload?.TitleParameters);
         }
 
         public override void Dispose()
         {
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
+            Connection.StreamDeckConnection.OnTitleParametersDidChange -= StreamDeckConnection_OnTitleParametersDidChange;
         }
 
-        public override void KeyPressed(KeyPayload payload)
+        public async override void KeyPressed(KeyPayload payload)
         {
             Logger.Instance.LogMessage(TracingLevel.INFO, "Key Pressed");
+
+            if (isAlerting)
+            {
+                isAlerting = false;
+                tmrAlert.Stop();
+                await Connection.SetImageAsync((string)null);
+                return;
+            }
+
             iis.Keyboard.TextEntry(ReadLastWordFromFile());
         }
 
@@ -61,7 +110,28 @@ namespace BarRaider.TextFileUpdater
 
         public async override void OnTick()
         {
-            await Connection.SetTitleAsync(ReadLastWordFromFile());
+            string lastWord = ReadLastWordFromFile();
+            if (!String.IsNullOrEmpty(settings.AlertText) && !isAlerting && settings.AlertText == lastWord)
+            {
+                // Start the alert
+                isAlerting = true;
+                tmrAlert.Start();
+            }
+
+            if (isAlerting)
+            {
+                return;
+            }
+
+            if (String.IsNullOrEmpty(settings.BackgroundFile))
+            {
+                await Connection.SetImageAsync((string)null);
+                await Connection.SetTitleAsync(lastWord);
+            }
+            else
+            {
+                await DrawImage(lastWord);
+            }
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
@@ -86,7 +156,7 @@ namespace BarRaider.TextFileUpdater
                 return "No File";
             }
 
-            string[] words = File.ReadAllText(settings.FileName).Replace("*","").Trim().Split(' ');
+            string[] words = File.ReadAllText(settings.FileName).Replace("*", "").Trim().Split(' ');
             return words.LastOrDefault();
         }
 
@@ -95,6 +165,71 @@ namespace BarRaider.TextFileUpdater
             return Connection.SetSettingsAsync(JObject.FromObject(settings));
         }
 
-       #endregion
+        private Color GenerateStageColor(string initialColor, int stage, int totalAmountOfStages)
+        {
+            Color color = ColorTranslator.FromHtml(initialColor);
+            int a = color.A;
+            double r = color.R;
+            double g = color.G;
+            double b = color.B;
+
+            // Try and increase the color in the last stage;
+            if (stage == totalAmountOfStages - 1)
+            {
+                stage = 1;
+            }
+
+            for (int idx = 0; idx < stage; idx++)
+            {
+                r /= 2;
+                g /= 2;
+                b /= 2;
+            }
+
+            return Color.FromArgb(a, (int)r, (int)g, (int)b);
+        }
+
+        private void TmrAlert_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            using (Bitmap img = Tools.GenerateGenericKeyImage(out Graphics graphics))
+            {
+                int height = img.Height;
+                int width = img.Width;
+
+                // Background
+                var bgBrush = new SolidBrush(GenerateStageColor(settings.AlertColor, alertStage, TOTAL_ALERT_STAGES));
+                graphics.FillRectangle(bgBrush, 0, 0, width, height);
+                Tools.AddTextPathToGraphics(graphics, titleParser, img.Height, img.Width, settings.AlertText);
+                Connection.SetImageAsync(img);
+
+                alertStage = (alertStage + 1) % TOTAL_ALERT_STAGES;
+                graphics.Dispose();
+            }
+        }
+
+        private async Task DrawImage(string text)
+        {
+            await Connection.SetTitleAsync(null);
+            using (Bitmap img = Tools.GenerateGenericKeyImage(out Graphics graphics))
+            {
+                int height = img.Height;
+                int width = img.Width;
+
+                // Background
+                if (!String.IsNullOrEmpty(settings.BackgroundFile) && File.Exists(settings.BackgroundFile))
+                {
+                    using (Image backgroundImage = Image.FromFile(settings.BackgroundFile))
+                    {
+                        graphics.DrawImage(backgroundImage, 0, 0, width, height);
+                    }
+                }
+
+                Tools.AddTextPathToGraphics(graphics, titleParser, img.Height, img.Width, text);
+                await Connection.SetImageAsync(img);
+                graphics.Dispose();
+            }
+        }
+
+        #endregion
     }
 }

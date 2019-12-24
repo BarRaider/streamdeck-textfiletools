@@ -4,7 +4,13 @@ A set of tools for manipulating text files through the Elgato Stream Deck. Usefu
 
  **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
-## New in v1.5.1
+## New in v1.2
+- `Last Word Display` action can now alert if the text equals a preset value. This works great with the `CountDown Timer` if you're saving the timer to a file and want to show it/alert on it from a different profile.
+- `Last Word Display` now supports modifying the Title settings from the Title properties menu
+- Added Multi-Action support to all actions
+
+
+## New in v1.1.5
 - Random Line action now supports `Sending Enter` key at the end of the line. Useful if using for things like Chat, and you want the random line to be sent automatically.
 
 ## Current Features

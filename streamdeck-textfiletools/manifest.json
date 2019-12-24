@@ -10,7 +10,7 @@
           "FontSize": "12"
         }
       ],
-      "SupportedInMultiActions": false,
+      "SupportedInMultiActions": true,
       "Tooltip": "Overwrites the contents of a text file with a predefined string. Use to change overlay text during Stream",
       "UUID": "com.barraider.textfiletools.textfileupdater",
       "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/TextFileUpdater.html"
@@ -25,10 +25,10 @@
           "FontSize": "12"
         }
       ],
-      "SupportedInMultiActions": false,
+      "SupportedInMultiActions": true,
       "Tooltip": "Shows the last word of a text file on your Stream Deck, pressing the key will send that word to the keyboard",
       "UUID": "com.barraider.textfiletools.lastworddisplay",
-      "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/LastFileDisplay.html"
+      "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/LastWordDisplay.html"
     },
     {
       "Icon": "Images/icon",
@@ -40,7 +40,7 @@
           "FontSize": "12"
         }
       ],
-      "SupportedInMultiActions": false,
+      "SupportedInMultiActions": true,
       "Tooltip": "Sends a random line from a text file to your keyboard, useful for giveaways or just sending a random 'hello' message in chat.",
       "UUID": "com.barraider.textfiletools.randomline",
       "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/RandomLine.html"
@@ -51,7 +51,7 @@
   "Name": "Text File Tools",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "1.1.5",
+  "Version": "1.2",
   "CodePath": "com.barraider.textfiletools",
   "Category": "Text File Tools [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
@@ -63,6 +63,6 @@
   ],
   "SDKVersion": 2,
   "Software": {
-    "MinimumVersion": "4.3"
+    "MinimumVersion": "4.4.1"
   }
 }
