@@ -1,4 +1,4 @@
-﻿// sdtools.common.js v1.0
+﻿// sdtools.common.js v1.1
 var websocket = null,
     uuid = null,
     registerEventName = null,
@@ -87,6 +87,9 @@ function loadConfiguration(payload) {
                 }
                 elem.value = payload[valueField];
             }
+            else if (elem.classList.contains("sdHTML")) { // HTML element
+                elem.innerHTML = payload[key];
+            }
             else { // Normal value
                 elem.value = payload[key];
             }
@@ -122,6 +125,10 @@ function setSettings() {
         else if (elem.classList.contains("sdList")) { // Dynamic dropdown
             var valueField = elem.getAttribute("sdValueField");
             payload[valueField] = elem.value;
+        }
+        else if (elem.classList.contains("sdHTML")) { // HTML element
+            var valueField = elem.getAttribute("sdValueField");
+            payload[valueField] = elem.innerHTML;
         }
         else { // Normal value
             payload[key] = elem.value;
@@ -177,7 +184,7 @@ function openWebsite() {
         const json = {
             'event': 'openUrl',
             'payload': {
-                'url': 'https://BarRaider.com'
+                'url': 'https://BarRaider.github.io'
             }
         };
         websocket.send(JSON.stringify(json));

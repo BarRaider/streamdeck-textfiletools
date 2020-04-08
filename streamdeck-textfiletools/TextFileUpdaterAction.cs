@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace BarRaider.TextFileUpdater
 {
+
+    //---------------------------------------------------
+    //          BarRaider's Hall Of Fame
+    // CSSGuru : tobitege
+    //---------------------------------------------------
     [PluginActionId("com.barraider.textfiletools.textfileupdater")]
     public class TextFileUpdaterAction : PluginBase
     {
@@ -17,9 +22,12 @@ namespace BarRaider.TextFileUpdater
         {
             public static PluginSettings CreateDefaultSettings()
             {
-                PluginSettings instance = new PluginSettings();
-                instance.OutputFileName = String.Empty;
-                instance.InputString = String.Empty;
+                PluginSettings instance = new PluginSettings
+                {
+                    OutputFileName = String.Empty,
+                    InputString = String.Empty,
+                    AppendToFile = false
+                };
                 return instance;
             }
 
@@ -29,11 +37,14 @@ namespace BarRaider.TextFileUpdater
 
             [JsonProperty(PropertyName = "inputString")]
             public string InputString { get; set; }
+
+            [JsonProperty(PropertyName = "appendToFile")]
+            public bool AppendToFile { get; set; }
         }
 
         #region Private Members
 
-        private PluginSettings settings;
+        private readonly PluginSettings settings;
 
         #endregion
         public TextFileUpdaterAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -46,11 +57,15 @@ namespace BarRaider.TextFileUpdater
             {
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
+
+            Connection.OnSendToPlugin += Connection_OnSendToPlugin;
+
         }
 
         public override void Dispose()
         {
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
+            Connection.OnSendToPlugin -= Connection_OnSendToPlugin;
         }
 
         public override void KeyPressed(KeyPayload payload)
@@ -81,8 +96,15 @@ namespace BarRaider.TextFileUpdater
                 Logger.Instance.LogMessage(TracingLevel.INFO, $"Saving value: {settings.InputString} to file: {settings.OutputFileName}");
                 if (!String.IsNullOrWhiteSpace(settings.OutputFileName))
                 {
-
-                    File.WriteAllText(settings.OutputFileName, settings.InputString);
+                    string output = settings.InputString.Replace(@"\n", "\n");
+                    if (settings.AppendToFile)
+                    {
+                        File.AppendAllText(settings.OutputFileName, output);
+                    }
+                    else
+                    {
+                        File.WriteAllText(settings.OutputFileName, output);
+                    }
                     Connection.ShowOk();
                 }
             }
@@ -100,6 +122,32 @@ namespace BarRaider.TextFileUpdater
             return Connection.SetSettingsAsync(JObject.FromObject(settings));
         }
 
-       #endregion
+        private void Connection_OnSendToPlugin(object sender, SdTools.Wrappers.SDEventReceivedEventArgs<SdTools.Events.SendToPlugin> e)
+        {
+            var payload = e.Event.Payload;
+            if (payload["property_inspector"] != null)
+            {
+                switch (payload["property_inspector"].ToString().ToLower())
+                {
+                    case "loadsavepicker":
+                        string propertyName = (string)payload["property_name"];
+                        string pickerTitle = (string)payload["picker_title"];
+                        string pickerFilter = (string)payload["picker_filter"];
+                        string fileName = PickersUtil.Pickers.SaveFilePicker(pickerTitle, null, pickerFilter);
+                        if (!string.IsNullOrEmpty(fileName))
+                        {
+                            if (!PickersUtil.Pickers.SetJsonPropertyValue(settings, propertyName, fileName))
+                            {
+                                Logger.Instance.LogMessage(TracingLevel.ERROR, "Failed to save picker value to settings");
+                            }
+                            SaveSettings();
+                        }
+                        break;
+                }
+            }
+        }
+
+
+        #endregion
     }
 }

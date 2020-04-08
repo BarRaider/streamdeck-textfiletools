@@ -1471,3 +1471,9 @@ input[type=range].vHorizon {
   margin: 4px 0px;
 }
 */
+
+.doubleLineTextArea 
+{
+    height: 30px;
+    overflow:hidden;
+}

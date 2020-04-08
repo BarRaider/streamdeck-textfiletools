@@ -4,6 +4,12 @@ A set of tools for manipulating text files through the Elgato Stream Deck. Usefu
 
  **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v1.3
+- `Last Word Display` action now supports splitting long words into multiple lines on the key.
+- `Text File Updater` action now supports appending data (instead of only overwriting like before).
+- Updated input textbox in `Text File Updater` to support multiple lines of text
+
+
 ## New in v1.2
 - `Last Word Display` action can now alert if the text equals a preset value. This works great with the `CountDown Timer` if you're saving the timer to a file and want to show it/alert on it from a different profile.
 - `Last Word Display` now supports modifying the Title settings from the Title properties menu

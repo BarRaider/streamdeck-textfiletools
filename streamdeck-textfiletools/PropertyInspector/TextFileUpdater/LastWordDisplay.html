@@ -22,6 +22,13 @@
                 <label class="sdpi-file-label" for="fileName">Choose file...</label>
             </div>
         </div>
+        <div type="checkbox" class="sdpi-item" id="dvSplitLongWord">
+            <div class="sdpi-item-label">Split long words</div>
+            <div class="sdpi-item-value">
+                <input id="splitLongWord" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="splitLongWord" class="sdpi-item-label"><span></span>Split long words to multiple lines</label>
+            </div>
+        </div>
         <div class="sdpi-item" id="dvFileName">
             <div class="sdpi-item-label">Background Image</div>
             <div class="sdpi-item-group file" id="filepickergroup">
@@ -41,7 +48,6 @@
             <div class="sdpi-item-label">Alert Color</div>
             <input type="color" class="sdpi-item-value sdProperty" value="#FF0000" id="alertColor" oninput="setSettings()">
         </div>
-
     </div>
 </body>
 </html>

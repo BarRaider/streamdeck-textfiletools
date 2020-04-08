@@ -25,7 +25,8 @@ namespace BarRaider.TextFileUpdater
                     FileName = String.Empty,
                     AlertText = String.Empty,
                     AlertColor = DEFAULT_ALERT_COLOR,
-                    BackgroundFile = String.Empty
+                    BackgroundFile = String.Empty,
+                    SplitLongWord = false
                 };
                 return instance;
             }
@@ -43,18 +44,24 @@ namespace BarRaider.TextFileUpdater
 
             [JsonProperty(PropertyName = "alertColor")]
             public string AlertColor { get; set; }
+
+            [JsonProperty(PropertyName = "splitLongWord")]
+            public bool SplitLongWord { get; set; }
+            
         }
 
         #region Private Members
         private const string DEFAULT_ALERT_COLOR = "#FF0000";
         private const int TOTAL_ALERT_STAGES = 4;
         private const double POINTS_TO_PIXEL_CONVERT = 1.3;
+        private const int STRING_SPLIT_SIZE = 7;
 
 
         private readonly PluginSettings settings;
         private readonly InputSimulator iis = new InputSimulator();
         private readonly System.Timers.Timer tmrAlert = new System.Timers.Timer();
-        private TitleParser titleParser = new TitleParser(null);
+        private SdTools.Wrappers.TitleParameters titleParameters = null;
+        private string userTitle;
         private Color titleColor = Color.White;
         private bool isAlerting = false;
         private int alertStage = 0;
@@ -70,25 +77,21 @@ namespace BarRaider.TextFileUpdater
             {
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
-            Connection.StreamDeckConnection.OnTitleParametersDidChange += StreamDeckConnection_OnTitleParametersDidChange;
+            Connection.OnTitleParametersDidChange += Connection_OnTitleParametersDidChange;
             tmrAlert.Interval = 200;
             tmrAlert.Elapsed += TmrAlert_Elapsed;
         }
 
-        private void StreamDeckConnection_OnTitleParametersDidChange(object sender, streamdeck_client_csharp.StreamDeckEventReceivedEventArgs<streamdeck_client_csharp.Events.TitleParametersDidChangeEvent> e)
+        private void Connection_OnTitleParametersDidChange(object sender, SdTools.Wrappers.SDEventReceivedEventArgs<SdTools.Events.TitleParametersDidChange> e)
         {
-            if (Connection.ContextId != e.Event.Context)
-            {
-                return;
-            }
-
-            titleParser = new TitleParser(e.Event?.Payload?.TitleParameters);
+            titleParameters = e.Event?.Payload?.TitleParameters;
+            userTitle = e.Event?.Payload?.Title;
         }
 
         public override void Dispose()
         {
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
-            Connection.StreamDeckConnection.OnTitleParametersDidChange -= StreamDeckConnection_OnTitleParametersDidChange;
+            Connection.OnTitleParametersDidChange -= Connection_OnTitleParametersDidChange;
         }
 
         public async override void KeyPressed(KeyPayload payload)
@@ -111,6 +114,11 @@ namespace BarRaider.TextFileUpdater
         public async override void OnTick()
         {
             string lastWord = ReadLastWordFromFile();
+            if (settings.SplitLongWord)
+            {
+                lastWord = SplitLongWord(lastWord);
+            }
+
             if (!String.IsNullOrEmpty(settings.AlertText) && !isAlerting && settings.AlertText == lastWord)
             {
                 // Start the alert
@@ -199,7 +207,7 @@ namespace BarRaider.TextFileUpdater
                 // Background
                 var bgBrush = new SolidBrush(GenerateStageColor(settings.AlertColor, alertStage, TOTAL_ALERT_STAGES));
                 graphics.FillRectangle(bgBrush, 0, 0, width, height);
-                Tools.AddTextPathToGraphics(graphics, titleParser, img.Height, img.Width, settings.AlertText);
+                Tools.AddTextPathToGraphics(graphics, titleParameters, img.Height, img.Width, settings.AlertText);
                 Connection.SetImageAsync(img);
 
                 alertStage = (alertStage + 1) % TOTAL_ALERT_STAGES;
@@ -224,10 +232,24 @@ namespace BarRaider.TextFileUpdater
                     }
                 }
 
-                Tools.AddTextPathToGraphics(graphics, titleParser, img.Height, img.Width, text);
+                Tools.AddTextPathToGraphics(graphics, titleParameters, img.Height, img.Width, text);
                 await Connection.SetImageAsync(img);
                 graphics.Dispose();
             }
+        }
+
+        private string SplitLongWord(string word)
+        {
+            // Split up to 4 lines
+            for (int idx = 0; idx < 3; idx++)
+            {
+                int cutSize = STRING_SPLIT_SIZE * (idx + 1);
+                if (word.Length > cutSize)
+                {
+                    word = $"{word.Substring(0, cutSize)}\n{word.Substring(cutSize)}";
+                }
+            }
+            return word;
         }
 
         #endregion
