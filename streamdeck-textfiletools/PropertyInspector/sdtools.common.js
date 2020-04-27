@@ -1,4 +1,14 @@
-﻿// sdtools.common.js v1.1
+﻿// ****************************************************************
+// * EasyPI v1.3
+// * Author: BarRaider
+// *
+// * JS library to simplify the communication between the 
+// * Stream Deck's Property Inspector and the plugin.
+// *
+// * Project page: https://github.com/BarRaider/streamdeck-easypi
+// * Support: http://discord.barraider.com
+// ****************************************************************
+
 var websocket = null,
     uuid = null,
     registerEventName = null,
@@ -184,7 +194,7 @@ function openWebsite() {
         const json = {
             'event': 'openUrl',
             'payload': {
-                'url': 'https://BarRaider.github.io'
+                'url': 'https://BarRaider.com'
             }
         };
         websocket.send(JSON.stringify(json));
