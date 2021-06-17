@@ -27,7 +27,8 @@ namespace BarRaider.TextFileUpdater.Actions
                     AlertColor = DEFAULT_ALERT_COLOR,
                     BackgroundFile = String.Empty,
                     SplitLongWord = false,
-                    TitlePrefix = String.Empty
+                    TitlePrefix = String.Empty,
+                    AutoStopAlert = false
                 };
                 return instance;
             }
@@ -51,6 +52,10 @@ namespace BarRaider.TextFileUpdater.Actions
 
             [JsonProperty(PropertyName = "titlePrefix")]
             public string TitlePrefix { get; set; }
+
+            [JsonProperty(PropertyName = "autoStopAlert")]
+            public bool AutoStopAlert { get; set; }
+            
 
         }
 
@@ -103,14 +108,15 @@ namespace BarRaider.TextFileUpdater.Actions
 
             if (isAlerting)
             {
-                Logger.Instance.LogMessage(TracingLevel.INFO, "Stopping Alert");
-                tmrAlert.Stop();
-                isAlerting = false;
-                await Connection.SetImageAsync((string)null);
+                await StopAlert();
                 return;
             }
 
-            iis.Keyboard.TextEntry(ReadLastWordFromFile());
+            var result = ReadLastWordFromFile();
+            if (!String.IsNullOrEmpty(result))
+            {
+                iis.Keyboard.TextEntry(result);
+            }
         }
 
         public override void KeyReleased(KeyPayload payload) { }
@@ -126,6 +132,7 @@ namespace BarRaider.TextFileUpdater.Actions
             if (!String.IsNullOrEmpty(settings.AlertText) && !isAlerting && settings.AlertText == lastWord)
             {
                 Logger.Instance.LogMessage(TracingLevel.INFO, $"Alerting, last word is {lastWord}");
+                await Connection.SetTitleAsync(null);
                 // Start the alert
                 isAlerting = true;
                 tmrAlert.Start();
@@ -133,7 +140,11 @@ namespace BarRaider.TextFileUpdater.Actions
 
             if (isAlerting)
             {
-                Logger.Instance.LogMessage(TracingLevel.INFO, "OnTick - In Alert!");
+                if (settings.AutoStopAlert && settings.AlertText != lastWord)
+                {
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Stopping alert, word changed to: {lastWord}");
+                    await StopAlert();
+                }
                 return;
             }
 
@@ -259,6 +270,14 @@ namespace BarRaider.TextFileUpdater.Actions
                 await Connection.SetImageAsync(img);
                 graphics.Dispose();
             }
+        }
+
+        private async Task StopAlert()
+        {
+            Logger.Instance.LogMessage(TracingLevel.INFO, "Stopping Alert");
+            tmrAlert.Stop();
+            isAlerting = false;
+            await Connection.SetImageAsync((string)null);
         }
 
         #endregion
