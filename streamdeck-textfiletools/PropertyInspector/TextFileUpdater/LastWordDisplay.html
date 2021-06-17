@@ -6,8 +6,8 @@
     <meta name=apple-mobile-web-app-capable content=yes>
     <meta name=apple-mobile-web-app-status-bar-style content=black>
     <title>BarRaider's Last File Display</title>
-    <link rel="stylesheet" href="../sdpi.css">
-    <script src="../sdtools.common.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
 </head>
 <body>
     <div class="sdpi-wrapper">
@@ -22,6 +22,11 @@
                 <label class="sdpi-file-label" for="fileName">Choose file...</label>
             </div>
         </div>
+        <div class="sdpi-item" id="dvTitlePrefix">
+            <div class="sdpi-item-label">Text Prefix</div>
+            <input class="sdpi-item-value sdProperty" placeholder="Word: \n" value="" id="titlePrefix" oninput="setSettings()">
+        </div>
+
         <div type="checkbox" class="sdpi-item" id="dvSplitLongWord">
             <div class="sdpi-item-label">Split long words</div>
             <div class="sdpi-item-value">
@@ -29,7 +34,7 @@
                 <label for="splitLongWord" class="sdpi-item-label"><span></span>Split long words to multiple lines</label>
             </div>
         </div>
-        <div class="sdpi-item" id="dvFileName">
+        <div class="sdpi-item" id="dvImage">
             <div class="sdpi-item-label">Background Image</div>
             <div class="sdpi-item-group file" id="filepickergroup">
                 <input class="sdpi-item-value sdProperty sdFile" type="file" id="backgroundFile" accept="*" oninput="setSettings()">

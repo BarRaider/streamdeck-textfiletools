@@ -6,8 +6,8 @@
     <meta name=apple-mobile-web-app-capable content=yes>
     <meta name=apple-mobile-web-app-status-bar-style content=black>
     <title>BarRaider's Text File Updater</title>
-    <link rel="stylesheet" href="../sdpi.css">
-    <script src="../sdtools.common.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
     <script src="../TextFileUpdater.js"></script>
 </head>
 <body>
@@ -18,7 +18,7 @@
         <div class="sdpi-item" id="dvOutputFileName">
             <div class="sdpi-item-label">File Name</div>
             <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="outputFileName">
-            <button class="max100 minmargin" onclick="openSaveFilePicker('Counter File Name', 'Text files (*.txt)|*.txt|All files (*.*)|*.*', 'outputFileName');">...</button>
+            <button class="max100 leftMargin0" onclick="openSaveFilePicker('Counter File Name', 'Text files (*.txt)|*.txt|All files (*.*)|*.*', 'outputFileName');">...</button>
         </div>
         <!---
     <div class="sdpi-item" id="dvTitlePrefix">
