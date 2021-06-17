@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=apple-mobile-web-app-status-bar-style content=black>
+    <title>BarRaider's Last File Display</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
+</head>
+<body>
+    <div class="sdpi-wrapper">
+        <details class="message">
+            <summary>For feedback/suggestions contact me at <span class="linkspan" onclick="openWebsite()">https://BarRaider.com</span></summary>
+        </details>
+        <div class="sdpi-item" id="dvFileName">
+            <div class="sdpi-item-label">File Name</div>
+            <div class="sdpi-item-group file" id="filepickergroup">
+                <input class="sdpi-item-value sdProperty sdFile" type="file" id="fileName" accept="*" oninput="setSettings()">
+                <label class="sdpi-file-info " for="fileName" id="fileNameFilename">No file...</label>
+                <label class="sdpi-file-label" for="fileName">Choose file...</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvRegex">
+            <div class="sdpi-item-label">Regex</div>
+            <input class="sdpi-item-value sdProperty" placeholder="^(\d)\.(\d*)$" value="" id="regex" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item" id="dvRegexFetch">
+            <div class="sdpi-item-label">Fetch</div>
+            <input class="sdpi-item-value sdProperty" placeholder="M0 / M2G1" value="" id="regexFetch" oninput="setSettings()">
+        </div>
+        <details class="message">
+            <summary>* M0 for 1st Match, M2G1 for 2nd group in 3rd Match, etc.</summary>
+        </details>
+        <hr />
+        <div class="sdpi-item" id="dvTitlePrefix">
+            <div class="sdpi-item-label">Text Prefix</div>
+            <input class="sdpi-item-value sdProperty" placeholder="Word: \n" value="" id="titlePrefix" oninput="setSettings()">
+        </div>
+
+        <div type="checkbox" class="sdpi-item" id="dvSplitLongWord">
+            <div class="sdpi-item-label">Split long words</div>
+            <div class="sdpi-item-value">
+                <input id="splitLongWord" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="splitLongWord" class="sdpi-item-label"><span></span>Split long words to multiple lines</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvImage">
+            <div class="sdpi-item-label">Background Image</div>
+            <div class="sdpi-item-group file" id="filepickergroup">
+                <input class="sdpi-item-value sdProperty sdFile" type="file" id="backgroundFile" accept="*" oninput="setSettings()">
+                <label class="sdpi-file-info " for="backgroundFile" id="backgroundFileFilename">No file...</label>
+                <label class="sdpi-file-label" for="backgroundFile">Choose file...</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvAlertText">
+            <div class="sdpi-item-label">Alert Text</div>
+            <input class="sdpi-item-value sdProperty" placeholder="00:00" value="" id="alertText" oninput="setSettings()">
+        </div>
+        <details class="message">
+            <summary>Start alerting if text in file matches 'Alert Text'</summary>
+        </details>
+        <div type="color" class="sdpi-item" id="dvAlert">
+            <div class="sdpi-item-label">Alert Color</div>
+            <input type="color" class="sdpi-item-value sdProperty" value="#FF0000" id="alertColor" oninput="setSettings()">
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvStopAlert">
+            <div class="sdpi-item-label">Stop Alert</div>
+            <div class="sdpi-item-value">
+                <input id="autoStopAlert" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="autoStopAlert" class="sdpi-item-label"><span></span>Stop alert if text changes again</label>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
