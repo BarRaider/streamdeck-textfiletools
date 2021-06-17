@@ -14,7 +14,7 @@ using WindowsInput;
 namespace BarRaider.TextFileUpdater.Actions
 {
     [PluginActionId("com.barraider.textfiletools.randomline")]
-    public class RandomLineAction : LineReaderActionBase
+    public class RandomLineAction : PluginBase
     {
         private class PluginSettings
         {
