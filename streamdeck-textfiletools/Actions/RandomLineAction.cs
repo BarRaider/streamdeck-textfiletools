@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using WindowsInput;
 
-namespace BarRaider.TextFileUpdater
+namespace BarRaider.TextFileUpdater.Actions
 {
     [PluginActionId("com.barraider.textfiletools.randomline")]
     public class RandomLineAction : PluginBase
@@ -21,7 +23,8 @@ namespace BarRaider.TextFileUpdater
                 PluginSettings instance = new PluginSettings
                 {
                     FileName = String.Empty,
-                    SendEnterAtEnd = false
+                    SendEnterAtEnd = false,
+                    UseClipboard = false
                 };
                 return instance;
             }
@@ -32,13 +35,16 @@ namespace BarRaider.TextFileUpdater
 
             [JsonProperty(PropertyName = "sendEnterAtEnd")]
             public bool SendEnterAtEnd { get; set; }
+
+            [JsonProperty(PropertyName = "useClipboard")]
+            public bool UseClipboard { get; set; }
         }
+        
 
         #region Private Members
 
         private readonly PluginSettings settings;
         private readonly InputSimulator iis = new InputSimulator();
-        private readonly Random rand = new Random();
 
         #endregion
         public RandomLineAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -64,13 +70,19 @@ namespace BarRaider.TextFileUpdater
             string randomLine = ReadRandomLineFromFile();
             if (!string.IsNullOrEmpty(randomLine))
             {
-                iis.Keyboard.TextEntry(randomLine);
-            }
-
-            if (settings.SendEnterAtEnd)
-            {
-                iis.Keyboard.KeyDown(WindowsInput.Native.VirtualKeyCode.RETURN);
-            }
+                if (settings.UseClipboard)
+                {
+                    SetClipboard(randomLine);
+                }
+                else
+                {
+                    iis.Keyboard.TextEntry(randomLine);
+                    if (settings.SendEnterAtEnd)
+                    {
+                        iis.Keyboard.KeyDown(WindowsInput.Native.VirtualKeyCode.RETURN);
+                    }
+                }
+            }          
         }
 
         public override void KeyReleased(KeyPayload payload) { }
@@ -98,11 +110,13 @@ namespace BarRaider.TextFileUpdater
 
             if (!File.Exists(settings.FileName))
             {
-                return "No File";
+
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} ReadRandomLineFromFile: File not found {settings.FileName}");
+                return null;
             }
 
             string[] lines = File.ReadAllLines(settings.FileName);
-            return lines[rand.Next(lines.Length)];
+            return lines[RandomGenerator.Next(lines.Length)];
         }
 
         private Task SaveSettings()
@@ -110,6 +124,26 @@ namespace BarRaider.TextFileUpdater
             return Connection.SetSettingsAsync(JObject.FromObject(settings));
         }
 
-       #endregion
+        private void SetClipboard(string text)
+        {
+            Thread staThread = new Thread(
+                delegate ()
+                {
+                    try
+                    {
+                        Clipboard.SetText(text);
+                    }
+
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.LogMessage(TracingLevel.ERROR, $"GetSongInfo ReadFromClipboard exception: {ex}");
+                    }
+                });
+            staThread.SetApartmentState(ApartmentState.STA);
+            staThread.Start();
+            staThread.Join();
+        }
+
+        #endregion
     }
 }

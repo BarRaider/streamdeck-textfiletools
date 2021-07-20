@@ -22,6 +22,18 @@
                 <label class="sdpi-file-label" for="fileName">Choose file...</label>
             </div>
         </div>
+        <div class="sdpi-item" id="dvRegex">
+            <div class="sdpi-item-label">Regex</div>
+            <input class="sdpi-item-value sdProperty" placeholder="^(\d)\.(\d*)$" value="" id="regex" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item" id="dvRegexFetch">
+            <div class="sdpi-item-label">Fetch</div>
+            <input class="sdpi-item-value sdProperty" placeholder="M0 / M2G1" value="" id="regexFetch" oninput="setSettings()">
+        </div>
+        <details class="message">
+            <summary>* M0 for 1st Match, M2G1 for 2nd group in 3rd Match, etc.</summary>
+        </details>
+        <hr />
         <div class="sdpi-item" id="dvTitlePrefix">
             <div class="sdpi-item-label">Text Prefix</div>
             <input class="sdpi-item-value sdProperty" placeholder="Word: \n" value="" id="titlePrefix" oninput="setSettings()">

@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WindowsInput;
 
-namespace BarRaider.TextFileUpdater
+namespace BarRaider.TextFileUpdater.Actions
 {
     [PluginActionId("com.barraider.textfiletools.lastworddisplay")]
     public class LastWordDisplayAction : PluginBase
@@ -26,7 +26,9 @@ namespace BarRaider.TextFileUpdater
                     AlertText = String.Empty,
                     AlertColor = DEFAULT_ALERT_COLOR,
                     BackgroundFile = String.Empty,
-                    SplitLongWord = false
+                    SplitLongWord = false,
+                    TitlePrefix = String.Empty,
+                    AutoStopAlert = false
                 };
                 return instance;
             }
@@ -47,15 +49,20 @@ namespace BarRaider.TextFileUpdater
 
             [JsonProperty(PropertyName = "splitLongWord")]
             public bool SplitLongWord { get; set; }
+
+            [JsonProperty(PropertyName = "titlePrefix")]
+            public string TitlePrefix { get; set; }
+
+            [JsonProperty(PropertyName = "autoStopAlert")]
+            public bool AutoStopAlert { get; set; }
             
+
         }
 
         #region Private Members
         private const string DEFAULT_ALERT_COLOR = "#FF0000";
         private const int TOTAL_ALERT_STAGES = 4;
         private const double POINTS_TO_PIXEL_CONVERT = 1.3;
-        private const int STRING_SPLIT_SIZE = 7;
-
 
         private readonly PluginSettings settings;
         private readonly InputSimulator iis = new InputSimulator();
@@ -91,22 +98,25 @@ namespace BarRaider.TextFileUpdater
         public override void Dispose()
         {
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
+            tmrAlert.Stop();
             Connection.OnTitleParametersDidChange -= Connection_OnTitleParametersDidChange;
         }
 
         public async override void KeyPressed(KeyPayload payload)
         {
-            Logger.Instance.LogMessage(TracingLevel.INFO, "Key Pressed");
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Key Pressed. Alert: {isAlerting}");
 
             if (isAlerting)
             {
-                isAlerting = false;
-                tmrAlert.Stop();
-                await Connection.SetImageAsync((string)null);
+                await StopAlert();
                 return;
             }
 
-            iis.Keyboard.TextEntry(ReadLastWordFromFile());
+            var result = ReadLastWordFromFile();
+            if (!String.IsNullOrEmpty(result))
+            {
+                iis.Keyboard.TextEntry(result);
+            }
         }
 
         public override void KeyReleased(KeyPayload payload) { }
@@ -114,13 +124,15 @@ namespace BarRaider.TextFileUpdater
         public async override void OnTick()
         {
             string lastWord = ReadLastWordFromFile();
-            if (settings.SplitLongWord)
+            if (String.IsNullOrEmpty(lastWord))
             {
-                lastWord = SplitLongWord(lastWord);
+                return;
             }
 
             if (!String.IsNullOrEmpty(settings.AlertText) && !isAlerting && settings.AlertText == lastWord)
             {
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"Alerting, last word is {lastWord}");
+                await Connection.SetTitleAsync(null);
                 // Start the alert
                 isAlerting = true;
                 tmrAlert.Start();
@@ -128,8 +140,21 @@ namespace BarRaider.TextFileUpdater
 
             if (isAlerting)
             {
+                if (settings.AutoStopAlert && settings.AlertText != lastWord)
+                {
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Stopping alert, word changed to: {lastWord}");
+                    await StopAlert();
+                }
                 return;
             }
+
+            if (settings.SplitLongWord)
+            {
+                lastWord = Tools.SplitStringToFit(lastWord, titleParameters);
+            }
+
+            // Add TitlePrefix
+            lastWord = $"{settings.TitlePrefix?.Replace(@"\n", "\n") ?? ""}{lastWord}";
 
             if (String.IsNullOrEmpty(settings.BackgroundFile))
             {
@@ -164,8 +189,17 @@ namespace BarRaider.TextFileUpdater
                 return "No File";
             }
 
-            string[] words = File.ReadAllText(settings.FileName).Replace("*", "").Trim().Split(' ');
-            return words.LastOrDefault();
+            try
+            {
+                string[] words = File.ReadAllText(settings.FileName).Replace("*", "").Trim().Split(' ');
+                return words.LastOrDefault();
+            }
+            catch (Exception ex)
+            {
+
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} ReadLastWordFromFile Exception: {ex}");
+                return null;
+            }
         }
 
         private Task SaveSettings()
@@ -207,7 +241,7 @@ namespace BarRaider.TextFileUpdater
                 // Background
                 var bgBrush = new SolidBrush(GenerateStageColor(settings.AlertColor, alertStage, TOTAL_ALERT_STAGES));
                 graphics.FillRectangle(bgBrush, 0, 0, width, height);
-                Tools.AddTextPathToGraphics(graphics, titleParameters, img.Height, img.Width, settings.AlertText);
+                graphics.AddTextPath(titleParameters, img.Height, img.Width, settings.AlertText);
                 Connection.SetImageAsync(img);
 
                 alertStage = (alertStage + 1) % TOTAL_ALERT_STAGES;
@@ -232,24 +266,18 @@ namespace BarRaider.TextFileUpdater
                     }
                 }
 
-                Tools.AddTextPathToGraphics(graphics, titleParameters, img.Height, img.Width, text);
+                graphics.AddTextPath(titleParameters, img.Height, img.Width, text);
                 await Connection.SetImageAsync(img);
                 graphics.Dispose();
             }
         }
 
-        private string SplitLongWord(string word)
+        private async Task StopAlert()
         {
-            // Split up to 4 lines
-            for (int idx = 0; idx < 3; idx++)
-            {
-                int cutSize = STRING_SPLIT_SIZE * (idx + 1);
-                if (word.Length > cutSize)
-                {
-                    word = $"{word.Substring(0, cutSize)}\n{word.Substring(cutSize)}";
-                }
-            }
-            return word;
+            Logger.Instance.LogMessage(TracingLevel.INFO, "Stopping Alert");
+            tmrAlert.Stop();
+            isAlerting = false;
+            await Connection.SetImageAsync((string)null);
         }
 
         #endregion
