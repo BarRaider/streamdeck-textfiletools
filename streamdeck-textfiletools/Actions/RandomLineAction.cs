@@ -34,7 +34,6 @@ namespace BarRaider.TextFileUpdater.Actions
                     SendEnterAtEnd = false,
                     OutputAction = OutputAction.Type,
                     OutputFileName = String.Empty
-                    UseClipboard = false
                 };
                 return instance;
             }
@@ -52,7 +51,7 @@ namespace BarRaider.TextFileUpdater.Actions
             [FilenameProperty]
             [JsonProperty(PropertyName = "outputFileName")]
             public string OutputFileName { get; set; }
-
+        }
         #region Private Members
 
         private readonly PluginSettings settings;
@@ -74,7 +73,8 @@ namespace BarRaider.TextFileUpdater.Actions
 
         public override void Dispose()
         {
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
+            Connection.OnSendToPlugin -= Connection_OnSendToPlugin;
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"{this.GetType()} Destructor called");
         }
 
         public async override void KeyPressed(KeyPayload payload)

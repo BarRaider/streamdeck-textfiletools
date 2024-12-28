@@ -150,7 +150,7 @@ namespace BarRaider.TextFileUpdater.Actions
 
             if (settings.SplitLongWord)
             {
-                lastWord = Tools.SplitStringToFit(lastWord, titleParameters);
+                lastWord = lastWord.SplitToFitKey(titleParameters);
             }
 
             // Add TitlePrefix

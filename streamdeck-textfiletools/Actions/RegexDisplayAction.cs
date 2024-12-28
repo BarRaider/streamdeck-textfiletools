@@ -15,7 +15,7 @@ using WindowsInput;
 namespace BarRaider.TextFileUpdater.Actions
 {
     [PluginActionId("com.barraider.textfiletools.regexdisplay")]
-    public class RegexDisplayAction : PluginBase
+    public class RegexDisplayAction : KeypadBase
     {
         private class PluginSettings
         {
@@ -161,7 +161,7 @@ namespace BarRaider.TextFileUpdater.Actions
 
             if (settings.SplitLongWord)
             {
-                regexWord = Tools.SplitStringToFit(regexWord, titleParameters);
+                regexWord = regexWord.SplitToFitKey(titleParameters);
             }
 
             // Add TitlePrefix
