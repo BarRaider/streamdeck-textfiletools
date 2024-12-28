@@ -26,6 +26,7 @@
         }
       ],
       "SupportedInMultiActions": true,
+      "UserTitleEnabled": false,
       "Tooltip": "Shows the last word of a text file on your Stream Deck, pressing the key will send that word to the keyboard",
       "UUID": "com.barraider.textfiletools.lastworddisplay",
       "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/LastWordDisplay.html"
@@ -51,7 +52,7 @@
   "Name": "Text File Tools",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "1.3",
+  "Version": "1.3.1",
   "CodePath": "com.barraider.textfiletools",
   "Category": "Text File Tools [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
