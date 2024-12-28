@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=apple-mobile-web-app-status-bar-style content=black>
+    <title>BarRaider's Next Line</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi-v2@latest/src/sdpi.css">
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi-v2@latest/src/sdtools.common.js"></script>
+    <script src="../NextLine.js"></script>
+</head>
+<body>
+    <div class="sdpi-wrapper">
+        <details class="message">
+            <summary>For feedback/suggestions contact me at <span class="linkspan" onclick="openWebsite()">https://BarRaider.com</span></summary>
+        </details>
+        <div class="sdpi-item" id="dvFileName">
+            <div class="sdpi-item-label">File Name</div>
+            <div class="sdpi-item-group file" id="filepickergroup">
+                <input class="sdpi-item-value sdProperty sdFile" type="file" id="fileName" accept="*" oninput="setSettings()">
+                <label class="sdpi-file-info " for="fileName" id="fileNameFilename">No file...</label>
+                <label class="sdpi-file-label" for="fileName">Choose file...</label>
+            </div>
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvSendEnter">
+            <div class="sdpi-item-label">Send Enter</div>
+            <div class="sdpi-item-value">
+                <input id="sendEnterAtEnd" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="sendEnterAtEnd" class="sdpi-item-label"><span></span>Simulate 'Enter' key after string</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvOutputAction">
+            <div class="sdpi-item-label">Output</div>
+            <select class="sdpi-item-value select sdProperty" id="outputAction" oninput="setSettings()" value="0">
+                <option value="0" selected>Simulate Typing</option>
+                <option value="1">Copy to clipboard</option>
+                <option value="2">Save to file</option>
+            </select>
+        </div>
+        <div class="sdpi-item" id="dvOutputFileName" style="display:none;">
+            <div class="sdpi-item-label">Output File</div>
+            <input class="sdpi-item-value sdProperty hasFileButton" disabled value="" id="outputFileName">
+            <button class="max100 minmargin" onclick="openSaveFilePicker('File Name', 'Text files (*.txt)|*.txt|All files (*.*)|*.*', 'outputFileName');">...</button>
+        </div>
+    </div>
+</body>
+</html>
