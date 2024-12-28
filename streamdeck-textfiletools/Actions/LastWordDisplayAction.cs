@@ -11,10 +11,10 @@ using System.Text;
 using System.Threading.Tasks;
 using WindowsInput;
 
-namespace BarRaider.TextFileUpdater
+namespace BarRaider.TextFileUpdater.Actions
 {
     [PluginActionId("com.barraider.textfiletools.lastworddisplay")]
-    public class LastWordDisplayAction : PluginBase
+    public class LastWordDisplayAction : KeypadBase
     {
         private class PluginSettings
         {
@@ -207,7 +207,7 @@ namespace BarRaider.TextFileUpdater
                 // Background
                 var bgBrush = new SolidBrush(GenerateStageColor(settings.AlertColor, alertStage, TOTAL_ALERT_STAGES));
                 graphics.FillRectangle(bgBrush, 0, 0, width, height);
-                Tools.AddTextPathToGraphics(graphics, titleParameters, img.Height, img.Width, settings.AlertText);
+                graphics.AddTextPath(titleParameters, img.Height, img.Width, settings.AlertText);
                 Connection.SetImageAsync(img);
 
                 alertStage = (alertStage + 1) % TOTAL_ALERT_STAGES;
@@ -232,7 +232,7 @@ namespace BarRaider.TextFileUpdater
                     }
                 }
 
-                Tools.AddTextPathToGraphics(graphics, titleParameters, img.Height, img.Width, text);
+                graphics.AddTextPath(titleParameters, img.Height, img.Width, text);
                 await Connection.SetImageAsync(img);
                 graphics.Dispose();
             }

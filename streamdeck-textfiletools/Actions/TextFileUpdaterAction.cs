@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BarRaider.TextFileUpdater
+namespace BarRaider.TextFileUpdater.Actions
 {
 
     //---------------------------------------------------
@@ -16,7 +16,7 @@ namespace BarRaider.TextFileUpdater
     // CSSGuru : tobitege
     //---------------------------------------------------
     [PluginActionId("com.barraider.textfiletools.textfileupdater")]
-    public class TextFileUpdaterAction : PluginBase
+    public class TextFileUpdaterAction : KeypadBase
     {
         private class PluginSettings
         {
