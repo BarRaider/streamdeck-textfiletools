@@ -14,8 +14,15 @@ using WindowsInput;
 namespace BarRaider.TextFileUpdater.Actions
 {
     [PluginActionId("com.barraider.textfiletools.nextline")]
-    public class NextLineAction : PluginBase
+    public class NextLineAction : KeypadBase
     {
+        public enum OutputAction
+        {
+            Type = 0,
+            Clipboard = 1,
+            SaveToFile = 2
+        }
+
         private class PluginSettings
         {
             public static PluginSettings CreateDefaultSettings()
@@ -24,7 +31,8 @@ namespace BarRaider.TextFileUpdater.Actions
                 {
                     FileName = String.Empty,
                     SendEnterAtEnd = false,
-                    UseClipboard = false
+                    OutputAction = OutputAction.Type,
+                    OutputFileName = String.Empty
                 };
                 return instance;
             }
@@ -36,8 +44,12 @@ namespace BarRaider.TextFileUpdater.Actions
             [JsonProperty(PropertyName = "sendEnterAtEnd")]
             public bool SendEnterAtEnd { get; set; }
 
-            [JsonProperty(PropertyName = "useClipboard")]
-            public bool UseClipboard { get; set; }
+            [JsonProperty(PropertyName = "outputAction")]
+            public OutputAction OutputAction { get; set; }
+
+            [FilenameProperty]
+            [JsonProperty(PropertyName = "outputFileName")]
+            public string OutputFileName { get; set; }
         }
         
 
@@ -58,32 +70,28 @@ namespace BarRaider.TextFileUpdater.Actions
             {
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
+            Connection.OnSendToPlugin += Connection_OnSendToPlugin;
         }
 
         public override void Dispose()
         {
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
+            Connection.OnSendToPlugin -= Connection_OnSendToPlugin;
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"{this.GetType()} Destructor called");
         }
 
-        public override void KeyPressed(KeyPayload payload)
+        public async override void KeyPressed(KeyPayload payload)
         {
-            Logger.Instance.LogMessage(TracingLevel.INFO, "Key Pressed");
-            string randomLine = ReadNextLineFromFile();
-            if (!string.IsNullOrEmpty(randomLine))
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"{this.GetType()} Key Pressed");
+            string nextLine = ReadNextLineFromFile();
+            if (!string.IsNullOrEmpty(nextLine))
             {
-                if (settings.UseClipboard)
+                if (HandleOutputAction(nextLine))
                 {
-                    SetClipboard(randomLine);
+                    await Connection.ShowOk();
+                    return;
                 }
-                else
-                {
-                    iis.Keyboard.TextEntry(randomLine);
-                    if (settings.SendEnterAtEnd)
-                    {
-                        iis.Keyboard.KeyDown(WindowsInput.Native.VirtualKeyCode.RETURN);
-                    }
-                }
-            }          
+            }
+            await Connection.ShowAlert();
         }
 
         public override void KeyReleased(KeyPayload payload) { }
@@ -106,13 +114,14 @@ namespace BarRaider.TextFileUpdater.Actions
         {
             if (String.IsNullOrEmpty(settings.FileName))
             {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} FileName is empty!");
                 return null;
             }
 
             if (!File.Exists(settings.FileName))
             {
 
-                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} ReadNextLineFromFile: File not found {settings.FileName}");
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} File not found {settings.FileName}");
                 return null;
             }
 
@@ -127,6 +136,90 @@ namespace BarRaider.TextFileUpdater.Actions
         private Task SaveSettings()
         {
             return Connection.SetSettingsAsync(JObject.FromObject(settings));
+        }
+
+        private void Connection_OnSendToPlugin(object sender, SdTools.Wrappers.SDEventReceivedEventArgs<SdTools.Events.SendToPlugin> e)
+        {
+            var payload = e.Event.Payload;
+            if (payload["property_inspector"] != null)
+            {
+                switch (payload["property_inspector"].ToString().ToLower())
+                {
+                    case "loadsavepicker":
+                        string propertyName = (string)payload["property_name"];
+                        string pickerTitle = (string)payload["picker_title"];
+                        string pickerFilter = (string)payload["picker_filter"];
+                        string fileName = PickersUtil.Pickers.SaveFilePicker(pickerTitle, null, pickerFilter);
+                        if (!string.IsNullOrEmpty(fileName))
+                        {
+                            if (!PickersUtil.Pickers.SetJsonPropertyValue(settings, propertyName, fileName))
+                            {
+                                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} Failed to save picker value to settings");
+                            }
+                            SaveSettings();
+                        }
+                        break;
+                }
+            }
+        }
+
+        private bool HandleOutputAction(string line)
+        {
+            try
+            {
+                switch (settings.OutputAction)
+                {
+                    case OutputAction.Type:
+                        iis.Keyboard.TextEntry(line);
+                        if (settings.SendEnterAtEnd)
+                        {
+                            iis.Keyboard.KeyDown(WindowsInput.Native.VirtualKeyCode.RETURN);
+                        }
+                        return true;
+                    case OutputAction.Clipboard:
+                        if (settings.SendEnterAtEnd)
+                        {
+                            line = line + '\n';
+                        }
+                        SetClipboard(line);
+                        return true;
+                    case OutputAction.SaveToFile:
+                        if (settings.SendEnterAtEnd)
+                        {
+                            line = line + '\n';
+                        }
+                        return SaveToOutputFile(line);
+                    default:
+                        Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} Invalid action {settings.OutputAction}");
+                        return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} HandleOutputAction Exception: {ex}");
+                return false;
+
+            }
+        }
+
+        private bool SaveToOutputFile(string text)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(settings.OutputFileName))
+                {
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} OutputFileName is empty!");
+                    return false;
+                }
+
+                File.WriteAllText(settings.OutputFileName, text);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} SaveToOutputFile exception: {ex}");
+            }
+            return false;
         }
 
         private void SetClipboard(string text)
