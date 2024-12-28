@@ -127,7 +127,7 @@ namespace BarRaider.TextFileUpdater.Actions
             var payload = e.Event.Payload;
             if (payload["property_inspector"] != null)
             {
-                switch (payload["property_inspector"].ToString().ToLower())
+                switch (payload["property_inspector"].ToString().ToLowerInvariant())
                 {
                     case "loadsavepicker":
                         string propertyName = (string)payload["property_name"];

@@ -8,13 +8,14 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WindowsInput;
 
 namespace BarRaider.TextFileUpdater.Actions
 {
-    [PluginActionId("com.barraider.textfiletools.lastworddisplay")]
-    public class LastWordDisplayAction : KeypadBase
+    [PluginActionId("com.barraider.textfiletools.regexdisplay")]
+    public class RegexDisplayAction : PluginBase
     {
         private class PluginSettings
         {
@@ -28,7 +29,9 @@ namespace BarRaider.TextFileUpdater.Actions
                     BackgroundFile = String.Empty,
                     SplitLongWord = false,
                     TitlePrefix = String.Empty,
-                    AutoStopAlert = false
+                    AutoStopAlert = false,
+                    Regex = String.Empty,
+                    RegexFetch = String.Empty
                 };
                 return instance;
             }
@@ -55,8 +58,12 @@ namespace BarRaider.TextFileUpdater.Actions
 
             [JsonProperty(PropertyName = "autoStopAlert")]
             public bool AutoStopAlert { get; set; }
-            
 
+            [JsonProperty(PropertyName = "regex")]
+            public string Regex { get; set; }
+
+            [JsonProperty(PropertyName = "regexFetch")]
+            public string RegexFetch { get; set; }
         }
 
         #region Private Members
@@ -74,7 +81,7 @@ namespace BarRaider.TextFileUpdater.Actions
         private int alertStage = 0;
 
         #endregion
-        public LastWordDisplayAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
+        public RegexDisplayAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
         {
             if (payload.Settings == null || payload.Settings.Count == 0)
             {
@@ -112,26 +119,30 @@ namespace BarRaider.TextFileUpdater.Actions
                 return;
             }
 
-            var result = ReadLastWordFromFile();
-            if (!String.IsNullOrEmpty(result))
+            var result = ReadRegexWordFromFile(true);
+            if (String.IsNullOrEmpty(result))
             {
-                iis.Keyboard.TextEntry(result);
+                await Connection.ShowAlert();
+                return;
             }
+
+            iis.Keyboard.TextEntry(result);
         }
 
         public override void KeyReleased(KeyPayload payload) { }
 
         public async override void OnTick()
         {
-            string lastWord = ReadLastWordFromFile();
-            if (String.IsNullOrEmpty(lastWord))
+            string regexWord = ReadRegexWordFromFile(false);
+            if (String.IsNullOrEmpty(regexWord))
             {
+                await Connection.SetTitleAsync(null);
                 return;
             }
 
-            if (!String.IsNullOrEmpty(settings.AlertText) && !isAlerting && settings.AlertText == lastWord)
+            if (!String.IsNullOrEmpty(settings.AlertText) && !isAlerting && settings.AlertText == regexWord)
             {
-                Logger.Instance.LogMessage(TracingLevel.INFO, $"Alerting, last word is {lastWord}");
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"Alerting, regex word is {regexWord}");
                 await Connection.SetTitleAsync(null);
                 // Start the alert
                 isAlerting = true;
@@ -140,9 +151,9 @@ namespace BarRaider.TextFileUpdater.Actions
 
             if (isAlerting)
             {
-                if (settings.AutoStopAlert && settings.AlertText != lastWord)
+                if (settings.AutoStopAlert && settings.AlertText != regexWord)
                 {
-                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Stopping alert, word changed to: {lastWord}");
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Stopping alert, word changed to: {regexWord}");
                     await StopAlert();
                 }
                 return;
@@ -150,20 +161,20 @@ namespace BarRaider.TextFileUpdater.Actions
 
             if (settings.SplitLongWord)
             {
-                lastWord = Tools.SplitStringToFit(lastWord, titleParameters);
+                regexWord = Tools.SplitStringToFit(regexWord, titleParameters);
             }
 
             // Add TitlePrefix
-            lastWord = $"{settings.TitlePrefix?.Replace(@"\n", "\n") ?? ""}{lastWord}";
+            regexWord = $"{settings.TitlePrefix?.Replace(@"\n", "\n") ?? ""}{regexWord}";
 
             if (String.IsNullOrEmpty(settings.BackgroundFile))
             {
                 await Connection.SetImageAsync((string)null);
-                await Connection.SetTitleAsync(lastWord);
+                await Connection.SetTitleAsync(regexWord);
             }
             else
             {
-                await DrawImage(lastWord);
+                await DrawImage(regexWord);
             }
         }
 
@@ -177,9 +188,19 @@ namespace BarRaider.TextFileUpdater.Actions
 
         #region Private Methods
 
-        private String ReadLastWordFromFile()
+        private String ReadRegexWordFromFile(bool logErrors)
         {
             if (String.IsNullOrEmpty(settings.FileName))
+            {
+                return null;
+            }
+
+            if (String.IsNullOrWhiteSpace(settings.Regex))
+            {
+                return null;
+            }
+
+            if (String.IsNullOrWhiteSpace(settings.RegexFetch))
             {
                 return null;
             }
@@ -191,16 +212,148 @@ namespace BarRaider.TextFileUpdater.Actions
 
             try
             {
-                string[] words = File.ReadAllText(settings.FileName).Replace("*", "").Trim().Split(' ');
-                return words.LastOrDefault();
+                string text = File.ReadAllText(settings.FileName);
+                string matchedText = MatchRegex(text, settings.Regex, settings.RegexFetch, logErrors);
+                return matchedText;
             }
             catch (Exception ex)
             {
 
-                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} ReadLastWordFromFile Exception: {ex}");
+                if (logErrors)
+                {
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} ReadLastWordFromFile Exception: {ex}");
+                }
                 return null;
             }
         }
+
+        private string MatchRegex(string text, string regex, string regexFetch, bool logErrors)
+        {
+            // Regex Parse
+            if (String.IsNullOrEmpty(regex) || String.IsNullOrEmpty(regexFetch))
+            {
+                if (logErrors)
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} MatchRegex Regex or RegexFetch are null!");
+                return null;
+            }
+
+            if (!IsRegexPatternValid(regex))
+            {
+                if (logErrors)
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"Invalid Regex: {regex}");
+            }
+
+            ParseMatchAndGroup(regexFetch, logErrors, out int matchIndex, out int groupIndex);
+            if (matchIndex >= 0)
+            {
+                var matchRegex = new Regex(regex);
+                var matches = matchRegex.Matches(text);
+                if (matches.Count <= matchIndex)
+                {
+                    if (logErrors)
+                        Logger.Instance.LogMessage(TracingLevel.ERROR, "Match Index is out of bounds for result");
+                }
+                else
+                {
+                    var match = matches[matchIndex];
+                    if (groupIndex >= 0)
+                    {
+                        if (match.Groups.Count <= groupIndex)
+                        {
+                            if (logErrors)
+                                Logger.Instance.LogMessage(TracingLevel.ERROR, "Group Index is out of bounds for result");
+                        }
+                        else
+                        {
+                            return match.Groups[groupIndex].Value;
+                        }
+                    }
+                    else
+                    {
+                        return match.Value;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsRegexPatternValid(String pattern)
+        {
+            try
+            {
+                new Regex(pattern);
+                return true;
+            }
+            catch { }
+            return false;
+        }
+
+        private void ParseMatchAndGroup(string regexFetch, bool logErrors, out int matchIndex, out int groupIndex)
+        {
+            matchIndex = -1;
+            groupIndex = -1;
+
+            if (string.IsNullOrWhiteSpace(regexFetch))
+            {
+                if (logErrors)
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, "RegexFetch is empty");
+                return;
+            }
+
+            regexFetch = regexFetch.ToUpperInvariant();
+            if (regexFetch[0] != 'M')
+            {
+                if (logErrors)
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"RegexFetch must start with a 'M'. {regexFetch}");
+                return;
+            }
+
+            int position = 1;
+            matchIndex = ExtractIndex(regexFetch, ref position);
+            if (matchIndex < 0)
+            {
+                if (logErrors)
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"RegexFetch has invalid format. {regexFetch}");
+                return;
+            }
+
+            if (position < regexFetch.Length && regexFetch[position] != 'G')
+            {
+                if (logErrors)
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"RegexFetch has invalid format,  'G' expected.  {regexFetch}");
+                return;
+            }
+
+            if (position < regexFetch.Length)
+            {
+                position++;
+                groupIndex = ExtractIndex(regexFetch, ref position);
+            }
+        }
+
+        private int ExtractIndex(string str, ref int position)
+        {
+            int startPosition = position;
+            int index = 0;
+            while (position < str.Length)
+            {
+                if (!Int32.TryParse(str[position].ToString(), out int currDigit))
+                {
+                    break;
+                }
+                index *= 10;
+                index += currDigit;
+                position++;
+            }
+
+            if (position == startPosition) // No numbers
+            {
+                return -1;
+            }
+            return index;
+        }
+
 
         private Task SaveSettings()
         {

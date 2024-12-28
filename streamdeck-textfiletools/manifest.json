@@ -33,6 +33,36 @@
     },
     {
       "Icon": "Images/icon",
+      "Name": "Regex Display",
+      "States": [
+        {
+          "Image": "Images/key",
+          "TitleAlignment": "middle",
+          "FontSize": "12"
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Shows the regex match on your Stream Deck, pressing the key will send that word to the keyboard",
+      "UUID": "com.barraider.textfiletools.regexdisplay",
+      "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/RegexDisplay.html"
+    },
+    {
+      "Icon": "Images/icon",
+      "Name": "Next Line Writer",
+      "States": [
+        {
+          "Image": "Images/key",
+          "TitleAlignment": "middle",
+          "FontSize": "12"
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Cycles through a file and sends one line every press.",
+      "UUID": "com.barraider.textfiletools.nextline",
+      "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/RandomLine.html"
+    },
+    {
+      "Icon": "Images/icon",
       "Name": "Random Line Writer",
       "States": [
         {
@@ -42,13 +72,13 @@
         }
       ],
       "SupportedInMultiActions": true,
-      "Tooltip": "Sends a random line from a text file to your keyboard, useful for giveaways or just sending a random 'hello' message in chat.",
+      "Tooltip": "Sends a random line from a text file to your keyboard or clipboard, useful for giveaways or just sending a random 'hello' message in chat.",
       "UUID": "com.barraider.textfiletools.randomline",
       "PropertyInspectorPath": "PropertyInspector/TextFileUpdater/RandomLine.html"
     }
   ],
   "Author": "BarRaider",
-  "Description": "A set of tools for manipulating text files through the Elgato Stream Deck. Useful for live stream updates",
+  "Description": "Manipulate text files for use during live streams",
   "Name": "Text File Tools",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
@@ -64,6 +94,6 @@
   ],
   "SDKVersion": 2,
   "Software": {
-    "MinimumVersion": "4.5"
+    "MinimumVersion": "5.0"
   }
 }

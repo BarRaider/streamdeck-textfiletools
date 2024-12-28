@@ -34,6 +34,7 @@ namespace BarRaider.TextFileUpdater.Actions
                     SendEnterAtEnd = false,
                     OutputAction = OutputAction.Type,
                     OutputFileName = String.Empty
+                    UseClipboard = false
                 };
                 return instance;
             }
@@ -51,13 +52,11 @@ namespace BarRaider.TextFileUpdater.Actions
             [FilenameProperty]
             [JsonProperty(PropertyName = "outputFileName")]
             public string OutputFileName { get; set; }
-        }
 
         #region Private Members
 
         private readonly PluginSettings settings;
         private readonly InputSimulator iis = new InputSimulator();
-        private readonly Random rand = new Random();
 
         #endregion
         public RandomLineAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -70,7 +69,6 @@ namespace BarRaider.TextFileUpdater.Actions
             {
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
-
             Connection.OnSendToPlugin += Connection_OnSendToPlugin;
         }
 
@@ -125,7 +123,7 @@ namespace BarRaider.TextFileUpdater.Actions
             }
 
             string[] lines = File.ReadAllLines(settings.FileName);
-            return lines[rand.Next(lines.Length)];
+            return lines[RandomGenerator.Next(lines.Length)];
         }
 
         private Task SaveSettings()
