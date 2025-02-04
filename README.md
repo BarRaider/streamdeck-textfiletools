@@ -4,6 +4,9 @@ A set of tools for manipulating text files through the Elgato Stream Deck. Usefu
 
  **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v1.5
+- Both `Next Line Writer` and `Random Line Writer` now support choosing from different types of outputs (Simulate typing, Copy to clipboard, Save to file)
+
 ## New in 1.4
 - New `Next Line` action cycles through a text file and output the next line on every keypress
 - Both `Next Line` and `Random Line` actions now support outputting to clipboard
