@@ -83,7 +83,7 @@
   "Name": "Text File Tools",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "1.4.1",
+  "Version": "1.5",
   "CodePath": "com.barraider.textfiletools",
   "Category": "Text File Tools [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
@@ -95,6 +95,6 @@
   ],
   "SDKVersion": 2,
   "Software": {
-    "MinimumVersion": "5.0"
+    "MinimumVersion": "6.8.1"
   }
 }
